@@ -1,0 +1,134 @@
+import json
+from datetime import datetime
+
+# Функція для зчитування даних з JSON файлу
+def load_json(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        return data
+    except FileNotFoundError:
+        print(f"Файл {file_path} не знайдено.")
+        return []
+    except json.JSONDecodeError:
+        print("Помилка читання JSON.")
+        return []
+
+# Функція для запису даних у JSON файл
+def save_json(file_path, data):
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Помилка при записі в файл {file_path}: {e}")
+
+# Функція для виведення вмісту JSON файлу на екран
+def display_students(file_path):
+    students = load_json(file_path)
+    if students:
+        for student in students:
+            print(student)
+
+# Функція для додавання нового учня
+def add_student(file_path):
+    students = load_json(file_path)
+    
+    surname = input("Введіть прізвище: ")
+    name = input("Введіть ім'я: ")
+    middle_name = input("Введіть по батькові: ")
+    birth_date = input("Введіть дату народження (рік-місяць-день, наприклад 2005-06-15): ")
+    gender = input("Введіть стать (ч/ж): ")
+    
+    student = {
+        "surname": surname,
+        "name": name,
+        "middle_name": middle_name,
+        "birth_date": birth_date,
+        "gender": gender
+    }
+    
+    students.append(student)
+    save_json(file_path, students)
+    print("Новий учень доданий.")
+
+# Функція для видалення учня
+def delete_student(file_path):
+    students = load_json(file_path)
+    surname = input("Введіть прізвище учня для видалення: ")
+    updated_students = [student for student in students if student['surname'] != surname]
+    
+    if len(updated_students) != len(students):
+        save_json(file_path, updated_students)
+        print(f"Учень із прізвищем {surname} видалений.")
+    else:
+        print(f"Учень із прізвищем {surname} не знайдений.")
+
+# Функція для пошуку учнів за полем
+def search_student(file_path):
+    students = load_json(file_path)
+    search_field = input("Введіть поле для пошуку (surname, name, birth_date, gender): ")
+    search_value = input("Введіть значення для пошуку: ")
+    
+    results = [student for student in students if student.get(search_field) == search_value]
+    if results:
+        print("Результати пошуку:")
+        for student in results:
+            print(student)
+    else:
+        print("Записів не знайдено.")
+
+# Функція для пошуку учнів із днем народження у вказаний місяць
+def birthday_in_month(file_path, result_file):
+    students = load_json(file_path)
+    month = int(input("Введіть номер місяця для перевірки (1-12): "))
+    
+    results = [
+        {"name": student["name"], "surname": student["surname"]}
+        for student in students
+        if datetime.strptime(student["birth_date"], "%Y-%m-%d").month == month
+    ]
+    
+    if results:
+        print("Учні з днем народження у вказаний місяць:")
+        for student in results:
+            print(student)
+        save_json(result_file, results)
+        print(f"Результати збережені в файл {result_file}")
+    else:
+        print("Учнів з днем народження у вказаний місяць не знайдено.")
+
+# Головна функція для меню
+def main():
+    file_path = 'students.json'
+    result_file = 'birthday_results.json'
+    
+    while True:
+        print("\nМеню:")
+        print("1. Вивести вміст JSON файлу")
+        print("2. Додати нового учня")
+        print("3. Видалити учня")
+        print("4. Пошук учня за полем")
+        print("5. Перевірка учнів з днем народження у вказаний місяць")
+        print("6. Вихід")
+        
+        choice = input("Виберіть опцію (1-6): ")
+        
+        if choice == '1':
+            display_students(file_path)
+        elif choice == '2':
+            add_student(file_path)
+        elif choice == '3':
+            delete_student(file_path)
+        elif choice == '4':
+            search_student(file_path)
+        elif choice == '5':
+            birthday_in_month(file_path, result_file)
+        elif choice == '6':
+            print("Вихід із програми.")
+            break
+        else:
+            print("Невірний вибір. Спробуйте ще раз.")
+
+# Запускаємо програму
+if __name__ == "__main__":
+    main()
