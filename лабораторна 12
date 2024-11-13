@@ -1,134 +1,207 @@
 import json
 from datetime import datetime
 
+# Шаблон для створення списку учнів
+students = [
+    {"last_name": "Іванов", "first_name": "Іван", "middle_name": "Петрович", "birth_date": "2005-03-15", "gender": "чоловік"},
+    {"last_name": "Петренко", "first_name": "Олена", "middle_name": "Володимирівна", "birth_date": "2006-05-20", "gender": "жінка"},
+    {"last_name": "Сидоренко", "first_name": "Марія", "middle_name": "Іванівна", "birth_date": "2005-12-11", "gender": "жінка"},
+    {"last_name": "Коваль", "first_name": "Максим", "middle_name": "Андрійович", "birth_date": "2006-08-07", "gender": "чоловік"},
+    {"last_name": "Бондар", "first_name": "Наталія", "middle_name": "Миколаївна", "birth_date": "2004-09-18", "gender": "жінка"},
+    {"last_name": "Шевченко", "first_name": "Дмитро", "middle_name": "Павлович", "birth_date": "2005-06-24", "gender": "чоловік"},
+    {"last_name": "Тимошенко", "first_name": "Вікторія", "middle_name": "Олександрівна", "birth_date": "2006-04-10", "gender": "жінка"},
+    {"last_name": "Мельник", "first_name": "Юрій", "middle_name": "Володимирович", "birth_date": "2005-02-22", "gender": "чоловік"},
+    {"last_name": "Коваленко", "first_name": "Ірина", "middle_name": "Сергіївна", "birth_date": "2005-07-15", "gender": "жінка"},
+    {"last_name": "Гриценко", "first_name": "Олексій", "middle_name": "Іванович", "birth_date": "2006-11-10", "gender": "чоловік"}
+]
+
+# Функція для запису списку учнів у файл JSON
+def write_to_json(data, filename="students.json"):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
 # Функція для зчитування даних з JSON файлу
-def load_json(file_path):
+def read_from_json(filename="students.json"):
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-        return data
+        with open(filename, "r", encoding="utf-8") as f:
+            return json.load(f)
     except FileNotFoundError:
-        print(f"Файл {file_path} не знайдено.")
-        return []
-    except json.JSONDecodeError:
-        print("Помилка читання JSON.")
         return []
 
-# Функція для запису даних у JSON файл
-def save_json(file_path, data):
-    try:
-        with open(file_path, 'w', encoding='utf-8') as file:
-            json.dump(data, file, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(f"Помилка при записі в файл {file_path}: {e}")
-
-# Функція для виведення вмісту JSON файлу на екран
-def display_students(file_path):
-    students = load_json(file_path)
-    if students:
+# Функція для виведення всіх записів
+def display_all_students():
+    students = read_from_json()
+    if not students:
+        print("Немає записів.")
+    else:
         for student in students:
-            print(student)
+            print(f"{student['last_name']} {student['first_name']} {student['middle_name']}, народився: {student['birth_date']}, стать: {student['gender']}")
 
-# Функція для додавання нового учня
-def add_student(file_path):
-    students = load_json(file_path)
-    
-    surname = input("Введіть прізвище: ")
-    name = input("Введіть ім'я: ")
-    middle_name = input("Введіть по батькові: ")
-    birth_date = input("Введіть дату народження (рік-місяць-день, наприклад 2005-06-15): ")
-    gender = input("Введіть стать (ч/ж): ")
-    
-    student = {
-        "surname": surname,
-        "name": name,
+# Функція для додавання нового запису
+def add_student():
+    last_name = input("Прізвище: ")
+    first_name = input("Ім'я: ")
+    middle_name = input("По батькові: ")
+    birth_date = input("Дата народження (yyyy-mm-dd): ")
+    gender = input("Стать: ")
+
+    new_student = {
+        "last_name": last_name,
+        "first_name": first_name,
         "middle_name": middle_name,
         "birth_date": birth_date,
         "gender": gender
     }
-    
-    students.append(student)
-    save_json(file_path, students)
-    print("Новий учень доданий.")
 
-# Функція для видалення учня
-def delete_student(file_path):
-    students = load_json(file_path)
-    surname = input("Введіть прізвище учня для видалення: ")
-    updated_students = [student for student in students if student['surname'] != surname]
-    
-    if len(updated_students) != len(students):
-        save_json(file_path, updated_students)
-        print(f"Учень із прізвищем {surname} видалений.")
-    else:
-        print(f"Учень із прізвищем {surname} не знайдений.")
+    students = read_from_json()
+    students.append(new_student)
+    write_to_json(students)
 
-# Функція для пошуку учнів за полем
-def search_student(file_path):
-    students = load_json(file_path)
-    search_field = input("Введіть поле для пошуку (surname, name, birth_date, gender): ")
-    search_value = input("Введіть значення для пошуку: ")
-    
-    results = [student for student in students if student.get(search_field) == search_value]
-    if results:
-        print("Результати пошуку:")
-        for student in results:
+# Функція для видалення запису за прізвищем
+def remove_student():
+    last_name_to_remove = input("Введіть прізвище учня для видалення: ")
+    students = read_from_json()
+    students = [student for student in students if student["last_name"] != last_name_to_remove]
+    write_to_json(students)
+
+# Функція для пошуку учнів по місяцю народження
+def search_by_birth_month():
+    month = input("Введіть місяць для пошуку (1-12): ")
+    students = read_from_json()
+    found_students = []
+    for student in students:
+        birth_month = datetime.strptime(student['birth_date'], "%Y-%m-%d").month
+        if birth_month == int(month):
+            found_students.append(f"{student['first_name']} {student['last_name']}")
+
+    if found_students:
+        print("Учні, народжені в цьому місяці:")
+        for student in found_students:
             print(student)
     else:
-        print("Записів не знайдено.")
+        print("Учнів з таким місяцем народження не знайдено.")
 
-# Функція для пошуку учнів із днем народження у вказаний місяць
-def birthday_in_month(file_path, result_file):
-    students = load_json(file_path)
-    month = int(input("Введіть номер місяця для перевірки (1-12): "))
-    
-    results = [
-        {"name": student["name"], "surname": student["surname"]}
-        for student in students
-        if datetime.strptime(student["birth_date"], "%Y-%m-%d").month == month
-    ]
-    
-    if results:
-        print("Учні з днем народження у вказаний місяць:")
-        for student in results:
-            print(student)
-        save_json(result_file, results)
-        print(f"Результати збережені в файл {result_file}")
-    else:
-        print("Учнів з днем народження у вказаний місяць не знайдено.")
+# Функція для запису результатів в інший файл JSON
+def save_task_result(result, filename="task_result.json"):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=4)
 
-# Головна функція для меню
+# Основне меню для користувача
 def main():
-    file_path = 'students.json'
-    result_file = 'birthday_results.json'
-    
     while True:
-        print("\nМеню:")
-        print("1. Вивести вміст JSON файлу")
+        print("\n1. Вивести усіх учнів")
         print("2. Додати нового учня")
         print("3. Видалити учня")
-        print("4. Пошук учня за полем")
-        print("5. Перевірка учнів з днем народження у вказаний місяць")
-        print("6. Вихід")
-        
-        choice = input("Виберіть опцію (1-6): ")
-        
-        if choice == '1':
-            display_students(file_path)
-        elif choice == '2':
-            add_student(file_path)
-        elif choice == '3':
-            delete_student(file_path)
-        elif choice == '4':
-            search_student(file_path)
-        elif choice == '5':
-            birthday_in_month(file_path, result_file)
-        elif choice == '6':
-            print("Вихід із програми.")
+        print("4. Пошук учнів за місяцем народження")
+        print("5. Вихід")
+
+        choice = input("Виберіть опцію: ")
+
+        if choice == "1":
+            display_all_students()
+        elif choice == "2":
+            add_student()
+        elif choice == "3":
+            remove_student()
+        elif choice == "4":
+            search_by_birth_month()
+        elif choice == "5":
             break
         else:
             print("Невірний вибір. Спробуйте ще раз.")
 
-# Запускаємо програму
+# Запуск програми
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Зміст json
+
+[
+    {
+        "last_name": "Іванов",
+        "first_name": "Іван",
+        "middle_name": "Петрович",
+        "birth_date": "2005-03-15",
+        "gender": "чоловік"
+    },
+    {
+        "last_name": "Петренко",
+        "first_name": "Олена",
+        "middle_name": "Володимирівна",
+        "birth_date": "2006-05-20",
+        "gender": "жінка"
+    },
+    {
+        "last_name": "Сидоренко",
+        "first_name": "Марія",
+        "middle_name": "Іванівна",
+        "birth_date": "2005-12-11",
+        "gender": "жінка"
+    },
+    {
+        "last_name": "Коваль",
+        "first_name": "Максим",
+        "middle_name": "Андрійович",
+        "birth_date": "2006-08-07",
+        "gender": "чоловік"
+    },
+    {
+        "last_name": "Бондар",
+        "first_name": "Наталія",
+        "middle_name": "Миколаївна",
+        "birth_date": "2004-09-18",
+        "gender": "жінка"
+    },
+    {
+        "last_name": "Шевченко",
+        "first_name": "Дмитро",
+        "middle_name": "Павлович",
+        "birth_date": "2005-06-24",
+        "gender": "чоловік"
+    },
+    {
+        "last_name": "Тимошенко",
+        "first_name": "Вікторія",
+        "middle_name": "Олександрівна",
+        "birth_date": "2006-04-10",
+        "gender": "жінка"
+    },
+    {
+        "last_name": "Мельник",
+        "first_name": "Юрій",
+        "middle_name": "Володимирович",
+        "birth_date": "2005-02-22",
+        "gender": "чоловік"
+    },
+    {
+        "last_name": "Коваленко",
+        "first_name": "Ірина",
+        "middle_name": "Сергіївна",
+        "birth_date": "2005-07-15",
+        "gender": "жінка"
+    },
+    {
+        "last_name": "Гриценко",
+        "first_name": "Олексій",
+        "middle_name": "Іванович",
+        "birth_date": "2006-11-10",
+        "gender": "чоловік"
+    }
+]
