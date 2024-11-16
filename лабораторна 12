@@ -1,19 +1,19 @@
 import json
 from datetime import datetime
 
-# Шаблон для створення списку учнів
-students = [
-    {"last_name": "Іванов", "first_name": "Іван", "middle_name": "Петрович", "birth_date": "2005-03-15", "gender": "чоловік"},
-    {"last_name": "Петренко", "first_name": "Олена", "middle_name": "Володимирівна", "birth_date": "2006-05-20", "gender": "жінка"},
-    {"last_name": "Сидоренко", "first_name": "Марія", "middle_name": "Іванівна", "birth_date": "2005-12-11", "gender": "жінка"},
-    {"last_name": "Коваль", "first_name": "Максим", "middle_name": "Андрійович", "birth_date": "2006-08-07", "gender": "чоловік"},
-    {"last_name": "Бондар", "first_name": "Наталія", "middle_name": "Миколаївна", "birth_date": "2004-09-18", "gender": "жінка"},
-    {"last_name": "Шевченко", "first_name": "Дмитро", "middle_name": "Павлович", "birth_date": "2005-06-24", "gender": "чоловік"},
-    {"last_name": "Тимошенко", "first_name": "Вікторія", "middle_name": "Олександрівна", "birth_date": "2006-04-10", "gender": "жінка"},
-    {"last_name": "Мельник", "first_name": "Юрій", "middle_name": "Володимирович", "birth_date": "2005-02-22", "gender": "чоловік"},
-    {"last_name": "Коваленко", "first_name": "Ірина", "middle_name": "Сергіївна", "birth_date": "2005-07-15", "gender": "жінка"},
-    {"last_name": "Гриценко", "first_name": "Олексій", "middle_name": "Іванович", "birth_date": "2006-11-10", "gender": "чоловік"}
-]
+# Шаблон для створення об'єкта учнів
+students = {
+    "student_1": {"last_name": "Іванов", "first_name": "Іван", "middle_name": "Петрович", "birth_date": "2005-03-15", "gender": "чоловік"},
+    "student_2": {"last_name": "Петренко", "first_name": "Олена", "middle_name": "Володимирівна", "birth_date": "2006-05-20", "gender": "жінка"},
+    "student_3": {"last_name": "Сидоренко", "first_name": "Марія", "middle_name": "Іванівна", "birth_date": "2005-12-11", "gender": "жінка"},
+    "student_4": {"last_name": "Коваль", "first_name": "Максим", "middle_name": "Андрійович", "birth_date": "2006-08-07", "gender": "чоловік"},
+    "student_5": {"last_name": "Бондар", "first_name": "Наталія", "middle_name": "Миколаївна", "birth_date": "2004-09-18", "gender": "жінка"},
+    "student_6": {"last_name": "Шевченко", "first_name": "Дмитро", "middle_name": "Павлович", "birth_date": "2005-06-24", "gender": "чоловік"},
+    "student_7": {"last_name": "Тимошенко", "first_name": "Вікторія", "middle_name": "Олександрівна", "birth_date": "2006-04-10", "gender": "жінка"},
+    "student_8": {"last_name": "Мельник", "first_name": "Юрій", "middle_name": "Володимирович", "birth_date": "2005-02-22", "gender": "чоловік"},
+    "student_9": {"last_name": "Коваленко", "first_name": "Ірина", "middle_name": "Сергіївна", "birth_date": "2005-07-15", "gender": "жінка"},
+    "student_10": {"last_name": "Гриценко", "first_name": "Олексій", "middle_name": "Іванович", "birth_date": "2006-11-10", "gender": "чоловік"}
+}
 
 # Функція для запису списку учнів у файл JSON
 def write_to_json(data, filename="students.json"):
@@ -26,7 +26,7 @@ def read_from_json(filename="students.json"):
         with open(filename, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
-        return []
+        return {}
 
 # Функція для виведення всіх записів
 def display_all_students():
@@ -34,11 +34,12 @@ def display_all_students():
     if not students:
         print("Немає записів.")
     else:
-        for student in students:
+        for key, student in students.items():
             print(f"{student['last_name']} {student['first_name']} {student['middle_name']}, народився: {student['birth_date']}, стать: {student['gender']}")
 
 # Функція для додавання нового запису
 def add_student():
+    key = input("Введіть унікальний ключ для нового учня (наприклад, student_11): ")
     last_name = input("Прізвище: ")
     first_name = input("Ім'я: ")
     middle_name = input("По батькові: ")
@@ -54,22 +55,26 @@ def add_student():
     }
 
     students = read_from_json()
-    students.append(new_student)
+    students[key] = new_student
     write_to_json(students)
 
-# Функція для видалення запису за прізвищем
+# Функція для видалення запису за ключем
 def remove_student():
-    last_name_to_remove = input("Введіть прізвище учня для видалення: ")
+    key_to_remove = input("Введіть ключ учня для видалення: ")
     students = read_from_json()
-    students = [student for student in students if student["last_name"] != last_name_to_remove]
-    write_to_json(students)
+    if key_to_remove in students:
+        del students[key_to_remove]
+        write_to_json(students)
+        print("Запис видалено.")
+    else:
+        print("Запис не знайдено.")
 
 # Функція для пошуку учнів по місяцю народження
 def search_by_birth_month():
     month = input("Введіть місяць для пошуку (1-12): ")
     students = read_from_json()
     found_students = []
-    for student in students:
+    for student in students.values():
         birth_month = datetime.strptime(student['birth_date'], "%Y-%m-%d").month
         if birth_month == int(month):
             found_students.append(f"{student['first_name']} {student['last_name']}")
@@ -78,13 +83,14 @@ def search_by_birth_month():
         print("Учні, народжені в цьому місяці:")
         for student in found_students:
             print(student)
+        save_task_result(found_students)
     else:
         print("Учнів з таким місяцем народження не знайдено.")
 
 # Функція для запису результатів в інший файл JSON
 def save_task_result(result, filename="task_result.json"):
     with open(filename, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=4)
+        json.dump({"found_students": result}, f, ensure_ascii=False, indent=4)
 
 # Основне меню для користувача
 def main():
@@ -120,88 +126,77 @@ if __name__ == "__main__":
 
 
 
+Зміст .json файлу:
 
-
-
-
-
-
-
-
-
-
-
-Зміст json
-
-[
-    {
+{
+    "student_1": {
         "last_name": "Іванов",
         "first_name": "Іван",
         "middle_name": "Петрович",
         "birth_date": "2005-03-15",
         "gender": "чоловік"
     },
-    {
+    "student_2": {
         "last_name": "Петренко",
         "first_name": "Олена",
         "middle_name": "Володимирівна",
         "birth_date": "2006-05-20",
         "gender": "жінка"
     },
-    {
+    "student_3": {
         "last_name": "Сидоренко",
         "first_name": "Марія",
         "middle_name": "Іванівна",
         "birth_date": "2005-12-11",
         "gender": "жінка"
     },
-    {
+    "student_4": {
         "last_name": "Коваль",
         "first_name": "Максим",
         "middle_name": "Андрійович",
         "birth_date": "2006-08-07",
         "gender": "чоловік"
     },
-    {
+    "student_5": {
         "last_name": "Бондар",
         "first_name": "Наталія",
         "middle_name": "Миколаївна",
         "birth_date": "2004-09-18",
         "gender": "жінка"
     },
-    {
+    "student_6": {
         "last_name": "Шевченко",
         "first_name": "Дмитро",
         "middle_name": "Павлович",
         "birth_date": "2005-06-24",
         "gender": "чоловік"
     },
-    {
+    "student_7": {
         "last_name": "Тимошенко",
         "first_name": "Вікторія",
         "middle_name": "Олександрівна",
         "birth_date": "2006-04-10",
         "gender": "жінка"
     },
-    {
+    "student_8": {
         "last_name": "Мельник",
         "first_name": "Юрій",
         "middle_name": "Володимирович",
         "birth_date": "2005-02-22",
         "gender": "чоловік"
     },
-    {
+    "student_9": {
         "last_name": "Коваленко",
         "first_name": "Ірина",
         "middle_name": "Сергіївна",
         "birth_date": "2005-07-15",
         "gender": "жінка"
     },
-    {
+    "student_10": {
         "last_name": "Гриценко",
         "first_name": "Олексій",
         "middle_name": "Іванович",
         "birth_date": "2006-11-10",
         "gender": "чоловік"
     }
-]
+}
